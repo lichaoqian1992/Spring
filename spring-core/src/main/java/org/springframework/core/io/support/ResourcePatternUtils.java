@@ -59,6 +59,9 @@ public abstract class ResourcePatternUtils {
 	 * @see PathMatchingResourcePatternResolver
 	 */
 	public static ResourcePatternResolver getResourcePatternResolver(@Nullable ResourceLoader resourceLoader) {
+		/**
+		 * AnnotationConfigApplicationContext为ResourcePatternResolver 强转为ResourcePatternResolver
+		 */
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			return (ResourcePatternResolver) resourceLoader;
 		}

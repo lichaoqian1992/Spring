@@ -72,7 +72,14 @@ public class CachingMetadataReaderFactory extends SimpleMetadataReaderFactory {
 	 * @see DefaultResourceLoader#getResourceCache
 	 */
 	public CachingMetadataReaderFactory(@Nullable ResourceLoader resourceLoader) {
+		/**
+		 * this.resourceLoader = (resourceLoader != null ? resourceLoader : new DefaultResourceLoader());
+		 */
 		super(resourceLoader);
+		/**
+		 * AnnotationConfigApplicationContext为DefaultResourceLoader
+		 * 因为继承于AbstractApplicationContext
+		 */
 		if (resourceLoader instanceof DefaultResourceLoader) {
 			this.metadataReaderCache =
 					((DefaultResourceLoader) resourceLoader).getResourceCache(MetadataReader.class);

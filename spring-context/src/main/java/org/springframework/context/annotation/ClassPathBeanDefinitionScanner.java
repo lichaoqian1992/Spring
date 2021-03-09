@@ -82,6 +82,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * of a {@code BeanDefinitionRegistry}
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry) {
+		/**
+		 * 调用重载方法，带一个useDefaultFilters为true
+		 */
 		this(registry, true);
 	}
 
@@ -110,6 +113,10 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @see #setEnvironment
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters) {
+		/**
+		 * getOrCreateEnvironment(如果可能，从给定的注册表中获取环境，否则返回一个新的StandardEnvironment)
+		 *
+		 */
 		this(registry, useDefaultFilters, getOrCreateEnvironment(registry));
 	}
 
@@ -136,7 +143,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters,
 			Environment environment) {
-
+		/**
+		 * AnnotationConfigApplicationContext为ResourceLoader 强转为ResourceLoader
+		 */
 		this(registry, useDefaultFilters, environment,
 				(registry instanceof ResourceLoader ? (ResourceLoader) registry : null));
 	}
@@ -161,10 +170,16 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
-
+		/**
+		 * AnnotationConfigApplicationContext里面传了true
+		 */
 		if (useDefaultFilters) {
 			registerDefaultFilters();
 		}
+		/**
+		 * 赋值environment
+		 * 赋值conditionEvaluator为null
+		 */
 		setEnvironment(environment);
 		setResourceLoader(resourceLoader);
 	}

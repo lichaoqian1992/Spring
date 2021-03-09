@@ -203,8 +203,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@SuppressWarnings("unchecked")
 	protected void registerDefaultFilters() {
+		// 在includeFilters里面新增AnnotationTypeFilter里面annotationType为Component.class
 		this.includeFilters.add(new AnnotationTypeFilter(Component.class));
 		ClassLoader cl = ClassPathScanningCandidateComponentProvider.class.getClassLoader();
+		/**
+		 * 注册javax.annotation.ManagedBean为AnnotationTypeFilter
+		 */
 		try {
 			this.includeFilters.add(new AnnotationTypeFilter(
 					((Class<? extends Annotation>) ClassUtils.forName("javax.annotation.ManagedBean", cl)), false));
@@ -213,6 +217,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		catch (ClassNotFoundException ex) {
 			// JSR-250 1.1 API (as included in Java EE 6) not available - simply skip.
 		}
+		/**
+		 * 注册javax.inject.Named为AnnotationTypeFilter
+		 * 如果没有找到该类就什么也不做
+		 */
 		try {
 			this.includeFilters.add(new AnnotationTypeFilter(
 					((Class<? extends Annotation>) ClassUtils.forName("javax.inject.Named", cl)), false));
@@ -261,8 +269,14 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	@Override
 	public void setResourceLoader(@Nullable ResourceLoader resourceLoader) {
+		// AnnotationConfigApplicationContext为ResourcePatternResolver 强转为ResourcePatternResolver
 		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+		// 如果resourceCaches里面没有MetadataReader就创建一个ConcurrentHashMap put进去
 		this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+		/**
+		 * 此处为spring5.0的新特性@indexed
+		 * 读取spring.components里面的数量并返回
+		 */
 		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(this.resourcePatternResolver.getClassLoader());
 	}
 

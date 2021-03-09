@@ -79,7 +79,15 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 	 */
 	public AnnotationTypeFilter(
 			Class<? extends Annotation> annotationType, boolean considerMetaAnnotations, boolean considerInterfaces) {
-
+		/**
+		 * 可以知道父类的成员属性为两个false
+		 * considerMetaAnnotations为true
+		 *
+		 * 如果是这种new AnnotationTypeFilter(
+		 * ((Class<? extends Annotation>) ClassUtils.forName(“javax.annotation.ManagedBean”, cl)), false)
+		 * 可以知道父类的成员属性为两个false
+		 * considerMetaAnnotations为false
+		 */
 		super(annotationType.isAnnotationPresent(Inherited.class), considerInterfaces);
 		this.annotationType = annotationType;
 		this.considerMetaAnnotations = considerMetaAnnotations;

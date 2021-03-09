@@ -439,6 +439,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	private String[] getBeanNamesForTypedStream(ResolvableType requiredType) {
 		return BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, requiredType);
+
 	}
 
 

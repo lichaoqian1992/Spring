@@ -146,11 +146,27 @@ class ConditionEvaluator {
 
 		public ConditionContextImpl(@Nullable BeanDefinitionRegistry registry,
 				@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
-
+			// registry赋值
 			this.registry = registry;
+			// 通过registry推断beanFactory
 			this.beanFactory = deduceBeanFactory(registry);
+			/**
+			 * 如果environment不为null就赋值，不然就推断
+			 * （在AnnotationConfigApplicationContext里面，通过getOrCreateEnvironment方法初始化了一个StandardEnvironment）
+			 */
 			this.environment = (environment != null ? environment : deduceEnvironment(registry));
+			/**
+			 * 如果resourceLoader不为null就赋值，不然就推断
+			 * （在AnnotationConfigApplicationContext里面是返回自己）
+			 * 因为在AnnotationConfigApplicationContext里面是返回自己实现了ResourceLoader
+			 */
 			this.resourceLoader = (resourceLoader != null ? resourceLoader : deduceResourceLoader(registry));
+			/**
+			 * 通过resourceLoader和beanFactory推断classLoader
+			 * 先从resourceLoader拿，如果没有在beanFactory拿
+			 * 从当前线程拿 从ClassUtils.class拿 返回bootstrap ClassLoader
+			 * 最后是无法访问系统ClassLoader哦，也许调用者可以忍受null...
+			 */
 			this.classLoader = deduceClassLoader(resourceLoader, this.beanFactory);
 		}
 

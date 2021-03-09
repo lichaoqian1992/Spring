@@ -68,6 +68,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * @see #setEnvironment(Environment)
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+		// getOrCreateEnvironment（如果可能，从给定的注册表中获取环境，否则返回一个新的StandardEnvironment）
 		this(registry, getOrCreateEnvironment(registry));
 	}
 
@@ -83,7 +84,17 @@ public class AnnotatedBeanDefinitionReader {
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(environment, "Environment must not be null");
+		// 给registry赋值
 		this.registry = registry;
+		/**
+		 * 创建一个ConditionEvaluator
+		 * 初始化成员属性context等于new ConditionContextImpl:
+		 * 								registry赋值
+		 * 							通过registry推断BeanFactory
+		 * 							如果environment不为null就赋值，不然就推断
+		 * 							如果resourceLoader不为null就赋值，不然就推断
+		 * 							通过resourceLoader和beanFactory推断classLoader
+		 */
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
@@ -292,7 +303,16 @@ public class AnnotatedBeanDefinitionReader {
 	 */
 	private static Environment getOrCreateEnvironment(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		/**
+		 * AnnotationConfigApplicationContext类一定是EnvironmentCapable
+		 * 	继承GenericApplicationContext
+		 * 		继承AbstractApplicationContext
+		 * 			实现ConfigurableApplicationContext
+		 * 				实现ApplicationContext
+		 * 					实现EnvironmentCapable
+		 */
 		if (registry instanceof EnvironmentCapable) {
+			//获取 Environment  如果为null默认环境将初始化一个StandardEnvironment
 			return ((EnvironmentCapable) registry).getEnvironment();
 		}
 		return new StandardEnvironment();

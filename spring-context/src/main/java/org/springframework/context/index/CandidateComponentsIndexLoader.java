@@ -86,6 +86,7 @@ public final class CandidateComponentsIndexLoader {
 		if (classLoaderToUse == null) {
 			classLoaderToUse = CandidateComponentsIndexLoader.class.getClassLoader();
 		}
+		// 判断缓存里面是否有ClassLoader，没有执行doLoadIndex方法
 		return cache.computeIfAbsent(classLoaderToUse, CandidateComponentsIndexLoader::doLoadIndex);
 	}
 
@@ -96,11 +97,13 @@ public final class CandidateComponentsIndexLoader {
 		}
 
 		try {
+			// 获取META-INF/spring.components下面所有的URL
 			Enumeration<URL> urls = classLoader.getResources(COMPONENTS_RESOURCE_LOCATION);
 			if (!urls.hasMoreElements()) {
 				return null;
 			}
 			List<Properties> result = new ArrayList<>();
+			// 遍历存储到result里面
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				Properties properties = PropertiesLoaderUtils.loadProperties(new UrlResource(url));
@@ -109,6 +112,7 @@ public final class CandidateComponentsIndexLoader {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + result.size() + "] index(es)");
 			}
+			// 计算出URL的总数量
 			int totalCount = result.stream().mapToInt(Properties::size).sum();
 			return (totalCount > 0 ? new CandidateComponentsIndex(result) : null);
 		}
