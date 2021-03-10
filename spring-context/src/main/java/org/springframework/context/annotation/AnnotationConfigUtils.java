@@ -278,29 +278,42 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd, AnnotatedTypeMetadata metadata) {
+		// 获取Lazy注解
 		AnnotationAttributes lazy = attributesFor(metadata, Lazy.class);
 		if (lazy != null) {
+			// 设置AnnotatedBeanDefinition的LazyInit为注解Lazy的value
 			abd.setLazyInit(lazy.getBoolean("value"));
 		}
+		// 如果AnnotatedBeanDefinition里面的metadata不等于参数metadata
+		// 就从AnnotatedBeanDefinition里面获取metadata,赋值LaztInit
 		else if (abd.getMetadata() != metadata) {
 			lazy = attributesFor(abd.getMetadata(), Lazy.class);
 			if (lazy != null) {
 				abd.setLazyInit(lazy.getBoolean("value"));
 			}
 		}
-
+		/**
+		 * 科普一下@Primary
+		 *
+		 * 自动装配时当出现多个Bean候选者时，被注解为@Primary的Bean将作为首选者，否则将抛出异常
+		 */
+		// 判断metadata里面有没有Primary注解
+		// 有就设置AnnotatedBeanDefinition的Primary为true
 		if (metadata.isAnnotated(Primary.class.getName())) {
 			abd.setPrimary(true);
 		}
+		// DependsOn注解可以定义在类和方法上，
+		// 意思是我这个组件要依赖于另一个组件，也就是说被依赖的组件会比该组件先注册到IOC容器中。
 		AnnotationAttributes dependsOn = attributesFor(metadata, DependsOn.class);
 		if (dependsOn != null) {
 			abd.setDependsOn(dependsOn.getStringArray("value"));
 		}
-
+		// Role注解标识Bean的分类
 		AnnotationAttributes role = attributesFor(metadata, Role.class);
 		if (role != null) {
 			abd.setRole(role.getNumber("value").intValue());
 		}
+		// Description注解 bean定义关联的文本描述
 		AnnotationAttributes description = attributesFor(metadata, Description.class);
 		if (description != null) {
 			abd.setDescription(description.getString("value"));

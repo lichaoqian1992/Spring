@@ -144,6 +144,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * e.g. {@link Configuration @Configuration} classes
 	 */
 	public void register(Class<?>... componentClasses) {
+		// 遍历componentClasses注册
 		for (Class<?> componentClass : componentClasses) {
 			registerBean(componentClass);
 		}
@@ -260,18 +261,33 @@ public class AnnotatedBeanDefinitionReader {
 	private <T> void doRegisterBean(Class<T> beanClass, @Nullable String name,
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
-
+		// registerBean方法调用doRegisterBean, 后面instanceSupplier name qualifiers都为null
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+		// 判断abd是否有Conditional注解，如果没有就返回false
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
-
+		// 给InstanceSupplier赋值
 		abd.setInstanceSupplier(supplier);
+		/**
+		 * 这个方法主要是通过bd生成一个ScopeMetadata，
+		 * 如过类上面有注解@Scope注解就解析scopeNameh和proxyMode的值赋值给ScopeMetadata,
+		 * 如果没有注解就使用默认的
+		 */
+		// 创建ScopeMetadata，解析里面@Scope的属性值，value和proxyMode进行赋值
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
+		// scopeName默认为singleton
 		abd.setScope(scopeMetadata.getScopeName());
+		// 判断是否有org.springframework.stereotype.Component注解
+		// 或javax.annotation.ManagedBean
+		// 或avax.inject.Named， 获取里面的value作为beanName
+		// 如果没有就调用buildDefaultBeanName把类名改为小驼峰
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
-
+		// 解析AnnotatedGenericBeanDefinition里面的注解
+		// Lazy Primary DependsOn Role Description
+		// 设置AnnotatedGenericBeanDefinition的属性
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+		// 遍历qualifiers设置AnnotatedGenericBeanDefinition的属性
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
@@ -290,8 +306,9 @@ public class AnnotatedBeanDefinitionReader {
 				customizer.customize(abd);
 			}
 		}
-
+		// 通过AnnotatedGenericBeanDefinition和beanName创建BeanDefinitionHolder,别名为null
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
+		// 判断ScopedProxyMode的类型不是NO类型， 创建ScopedProxy
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}

@@ -932,6 +932,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
+				// 做一些校验
 				((AbstractBeanDefinition) beanDefinition).validate();
 			}
 			catch (BeanDefinitionValidationException ex) {
@@ -939,12 +940,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						"Validation of bean definition failed", ex);
 			}
 		}
-
+		// 先从beanDefinitionMap里面获取
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
+		// 这里是beanDefinitionMap不为null的情况，我们启动很少会出现这种情况
 		if (existingDefinition != null) {
+			// 判断下是否允许它覆盖，不能就抛异常
 			if (!isAllowBeanDefinitionOverriding()) {
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
+			// 下面是允许它覆盖bean
+			// 判断下beanDefinitionMap里面拿出来的bdRole是否小于现在的bdRole，小于就打印日志
 			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
 				// e.g. was ROLE_APPLICATION, now overriding with ROLE_SUPPORT or ROLE_INFRASTRUCTURE
 				if (logger.isInfoEnabled()) {
@@ -953,6 +958,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							existingDefinition + "] with [" + beanDefinition + "]");
 				}
 			}
+			// 判断beanDefinitionMap里面拿出来的bd和现在的是否一样，不一样就打印日志
 			else if (!beanDefinition.equals(existingDefinition)) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Overriding bean definition for bean '" + beanName +
@@ -967,11 +973,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 这里执行覆盖逻辑
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
+			// 检查该工厂的Bean创建阶段是否已经开始
 			if (hasBeanCreationStarted()) {
+				// 不能再修改启动时间的集合元素了 为了稳定的迭代
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
+				// 通过加锁 去更新beanDefinitionMap和beanDefinitionNames
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);
 					List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
@@ -983,16 +993,23 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			else {
 				// Still in startup registration phase
+				// 仍处于启动注册阶段
+				// 把beanDefinition注册到beanDefinitionMap
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				// 把beanDefinitionNames添加beanName
 				this.beanDefinitionNames.add(beanName);
+				// 判断beanName 在manualSingletonNames里面有 没有就添加进去
 				removeManualSingletonName(beanName);
 			}
+			// 设置 冻结配置的情况下,bean定义名称的缓存 数组为null
 			this.frozenBeanDefinitionNames = null;
 		}
-
+		// 从beanDefinitionMap里面获取existingDefinition不为null
+		// singletonObjects有这个beanName就执行resetBeanDefinition
 		if (existingDefinition != null || containsSingleton(beanName)) {
 			resetBeanDefinition(beanName);
 		}
+		// 是否可以为所有bean缓存bean定义元数据
 		else if (isConfigurationFrozen()) {
 			clearByTypeCache();
 		}
@@ -1106,9 +1123,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 * (if this condition does not apply, the action can be skipped)
 	 */
 	private void updateManualSingletonNames(Consumer<Set<String>> action, Predicate<Set<String>> condition) {
+		// 检查该工厂的bean创建阶段是否已经开始
+		// 是的话加锁操作,不是不加
 		if (hasBeanCreationStarted()) {
 			// Cannot modify startup-time collection elements anymore (for stable iteration)
 			synchronized (this.beanDefinitionMap) {
+				// 做了下面的操作
+				// 首先调用了containsKey判断里面没有这个beanName,
+				// 然后再新建一个set addAll(manualSingletonNames)
+				// 最后在add beanName
 				if (condition.test(this.manualSingletonNames)) {
 					Set<String> updatedSingletons = new LinkedHashSet<>(this.manualSingletonNames);
 					action.accept(updatedSingletons);
@@ -1118,6 +1141,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		else {
 			// Still in startup registration phase
+			// 首先调用了containsKey判断里面没有这个beanName,然后这个是直接在manualSingletonNames新增
 			if (condition.test(this.manualSingletonNames)) {
 				action.accept(this.manualSingletonNames);
 			}
