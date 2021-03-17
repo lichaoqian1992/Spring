@@ -950,17 +950,22 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * onRefresh() method and publishing the
 	 * {@link org.springframework.context.event.ContextRefreshedEvent}.
 	 */
+	// 完成此上下文的刷新,调用LifecycleProcessor的onRefresh()方法并发布
 	protected void finishRefresh() {
 		// Clear context-level resource caches (such as ASM metadata from scanning).
+		// 清除上下文级别的资源缓存(例如来自扫描的ASM元数据)
 		clearResourceCaches();
 
 		// Initialize lifecycle processor for this context.
+		// 为此上下文初始化生命周期处理器(给this.lifecycleProcessor赋值)
 		initLifecycleProcessor();
 
 		// Propagate refresh to lifecycle processor first.
+		// 执行lifecycleProcessor的onRefresh
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.
+		// 发布最终时间
 		publishEvent(new ContextRefreshedEvent(this));
 
 		// Participate in LiveBeansView MBean, if active.
