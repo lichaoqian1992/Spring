@@ -152,14 +152,14 @@ public abstract class AnnotationConfigUtils {
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		/**
 		 * 这里如果是通过AnnotationConfigApplicationContext来启动spring
-		 * 一定是进不来这个判断的，因为父类已经初始化好了beanFactory
+		 * 一定会进来这个判断的，因为父类已经初始化好了beanFactory
 		 */
 		if (beanFactory != null) {
 			/**
 			 * 在AnnotationConfigApplicationContext中
 			 * beanFactory为new DefaultListableBeanFactory()
 			 * DependencyComparator就为null 判断为false
-			 * beanFactory设置为AnnotationAwareOrderComparato
+			 * beanFactory设置为AnnotationAwareOrderComparator
 			 */
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
